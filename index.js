@@ -48,10 +48,10 @@ const stations = {
     ]
 };
 
-let scrape = {};
+let scrapeData = {};
 
 for (let l in s) {
-    scrape[l] = {};
+    scrapeData[l] = {};
 }
 
 function getNowTime() {
@@ -80,7 +80,7 @@ async function scrape() {
     console.log(`[${getNowTime()}] Started a full scrape.`);
     for (let l in s) {
         for (let u of s[l]) {
-            scrape[l][u] = await doScrape(u);
+            scrapeData[l][u] = await doScrape(u);
         }
     }
     console.log(`[${getNowTime()}] Completed a full scrape.`);
@@ -93,10 +93,10 @@ cron.schedule(commonOccurence, async () => {
 app.use('/', express.static('index.html')); // Endpoint used to open the file in your browser via http://localhost:3000/
 
 app.get('/data', (req, res) => {
-  if (Object.keys(scrape).length === 0) {
+  if (Object.keys(scrapeData).length === 0) {
     res.json({ error: "Data not yet available. Please wait." });
   } else {
-    res.json(scrape);
+    res.json(scrapeData);
   }
 }); // Endpoint the site uses to GET data from server.
 
