@@ -81,7 +81,13 @@
     </style>
 </head>
 <body>
-    <h1>Live Train Tracker / Transperth</h1>
+    <h1>Transperth Live Train Tracker</h1>
+    <h3>Time Colour Key</h3>
+    <ul>
+        <li>Green - Data is over 1 minute old</li>
+        <li>Yellow - Data is over 30 seconds old</li>
+        <li>Red - Data is under 30 seconds old</li>
+    </ul>
     <div id="station-grid">Loading data...</div>
     <script>
         function fetchData() {
