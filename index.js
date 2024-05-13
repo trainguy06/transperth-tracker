@@ -1,8 +1,19 @@
+// TRANSPERTH TRACKER
+// Created by Sunny Haywood (@.trainguy on Discord) under trainguy industries.
+// 
+// Licensed under MIT License.
+// This permits you to make your own private copies, and not reuse my code for monitary purposes. I also request that you personally message me if you intend on using this.
+
 const express = require('express');
 const puppeteer = require('puppeteer');
 const cron = require('node-cron');
+
 const app = express();
-const port = 3000;
+const port = 3000; // Change this if you hate 3000
+
+//const commonOccurence = '0 */5 * * * *'; // Makes a full scrape every 5 minutes. (Resource Friendly)
+const commonOccurence = '0 */2 * * * *'; // Makes a full scrape every 2 minutes. (Semi-Resource Friendly)
+//const commonOccurence = '0 * * * * *'; // Makes a full scrape every minute. (Not Resource Friendly)
 
 const stations = {
     'JoondalupLine': [
@@ -37,46 +48,60 @@ const stations = {
     ]
 };
 
-let latestScrapedData = {};
+let scrape = {};
 
-for (let line in stations) {
-    latestScrapedData[line] = {};
+for (let l in s) {
+    scrape[l] = {};
 }
 
-async function scrapeData(url) {
+function getNowTime() {
+    var now = new Date();
+    var year = now.getFullYear();
+    var month = (now.getMonth() + 1).toString().padStart(2, '0');
+    var day = now.getDate().toString().padStart(2, '0');
+    var hours = now.getHours().toString().padStart(2, '0');
+    var minutes = now.getMinutes().toString().padStart(2, '0');
+    var seconds = now.getSeconds().toString().padStart(2, '0');
+    
+    return year + month + day + ' - ' + hours + ':' + minutes + ':' + seconds;
+}
+
+async function doScrape(u) {
     const browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']});
     const page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'networkidle0' });
+    await page.goto(u, { waitUntil: 'networkidle0' }); // This ensures that the whole page loads before scraping.
     await page.waitForSelector('#divStationStatusList', {timeout: 30000});
-    const tableHtml = await page.$eval('#divStationStatusList', el => el.innerHTML);
+    const data = await page.$eval('#divStationStatusList', el => el.innerHTML);
     await browser.close();
-    return tableHtml;
+    return data;
 }
 
-async function scrapeAllStations() {
-    for (let line in stations) {
-        for (let url of stations[line]) {
-            latestScrapedData[line][url] = await scrapeData(url);
+async function scrape() {
+    console.log(`[${getNowTime()}] Started a full scrape.`);
+    for (let l in s) {
+        for (let u of s[l]) {
+            scrape[l][u] = await doScrape(u);
         }
     }
-    console.log('All stations updated.');
+    console.log(`[${getNowTime()}] Completed a full scrape.`);
 }
 
-cron.schedule('0 */2 * * * *', async () => {
-    await scrapeAllStations();
-});
+cron.schedule(commonOccurence, async () => {
+    await scrape();
+}); // Starts a scrape every so often depending on the specified value at the top of file.
 
-app.use('/tracker', express.static('index.html'));
+app.use('/', express.static('index.html')); // Endpoint used to open the file in your browser via http://localhost:3000/
 
 app.get('/data', (req, res) => {
-  if (Object.keys(latestScrapedData).length === 0) {
+  if (Object.keys(scrape).length === 0) {
     res.json({ error: "Data not yet available. Please wait." });
   } else {
-    res.json(latestScrapedData);
+    res.json(scrape);
   }
-});
+}); // Endpoint the site uses to GET data from server.
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
-scrapeAllStations();
+
+scrape(); // Initally get data when server starts.
