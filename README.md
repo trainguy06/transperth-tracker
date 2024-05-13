@@ -6,7 +6,7 @@ A very simple self-hostable site that slowly tracks trains currently scheduled o
    - Command Prompt for Windows
      OR
    - Terminal for MacOS
-2. ENSURE you have a version of Node installed on your computer. (I have tested with v18 and Higher)
+2. ENSURE you have a version of [Node](https://nodejs.org/en/download) installed on your computer. (I have tested with v18 and Higher)
 3. Open the new folder you made in your terminal of choice and initiate the files:
    `npm init -y` (This creates your package.json instantly)
    `npm i express node-cron puppeteer` (This will install the dependencies required to run the server)
