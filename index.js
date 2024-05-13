@@ -101,7 +101,7 @@ app.get('/data', (req, res) => {
 }); // Endpoint the site uses to GET data from server.
 
 app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+  console.log(`Server running on http://localhost:${port}/home`);
 });
 
 scrape(); // Initally get data when server starts.
