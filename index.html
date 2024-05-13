@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://kit.fontawesome.com/eb197186bd.js" crossorigin="anonymous"></script>
-    <title>Station Tracker</title>
+    <title>Transperth Tracker</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;700&display=swap');
         * {
@@ -65,6 +64,12 @@
             border-radius: 5px;
             margin-right: 10px;
         }
+        .cseries {
+            background-color: gray;
+            padding: 2px 6px;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
@@ -107,16 +112,15 @@
                                     if (tr.textContent.includes('(0 cars)')) {
                                         const isToMandurah = tr.textContent.includes('To Mandurah');
                                         const isToPerth = tr.textContent.includes('To Perth');
-                                        const iconColor = isToMandurah ? 'orange' : (isToPerth ? 'black' : 'blue');
-                                        zeroCarsIcon += `<i class="fa-solid fa-square-c" style="color: ${iconColor};"></i> `;
+                                        const iconColor = isToMandurah ? 'orange' : (isToPerth ? 'black' : 'green');
+                                        zeroCarsIcon += `<i class="cseries" style="color: ${iconColor};">C-Series!</i> `;
                                     }
                                 });
     
                                 return `<div class="station-name">${zeroCarsIcon}${url.split('=')[2].replace('%20Stn', '').replace('%20', ' ')}<span class="last-updated ${colorClass}">${lastUpdatedText}</span></div>
                                         <div class="station-data">${data[line][url]}</div>`;
                             } catch (error) {
-                                // If parsing fails, display raw data.
-                                return `<div class="station-name"><span class="error"><i class="fa-solid fa-calendar-xmark"></i></span>${url.split('=')[2].replace('%20Stn', '').replace('%20', ' ')}</div>
+                                return `<div class="station-name"><span class="error">Error parsing data</span>${url.split('=')[2].replace('%20Stn', '').replace('%20', ' ')}</div>
                                         <div class="station-data"><pre>${JSON.stringify(data[line][url], null, 2)}</pre></div>`;
                             }
                         }).join('');
