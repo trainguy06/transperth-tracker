@@ -14,5 +14,5 @@ A very simple self-hostable site that slowly tracks trains currently scheduled o
 
 Any issues can be reported via the Issues section on GitHub, or you can add my Discord and ask me further questions: `@.trainguy`.
 
-## I want to change some things in your code.
-Feel free. It's a very simple template and could be built upon further. Some simple things you may want to change is how often the site will get data from the Transperth Website. Maybe you might want to track different lines instead of just the Mandurah and Joondalup Line.
+## Looks a bit ugly...
+Yes I 100% understand it looks very ugly at the moment, however, it functions exactly how it should.
