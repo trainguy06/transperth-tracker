@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://kit.fontawesome.com/eb197186bd.js" crossorigin="anonymous"></script>
+    <title>Station Tracker</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;700&display=swap');
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+        #station-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 10px;
+            padding: 10px;
+        }
+        .station-line {
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .station-name {
+            cursor: pointer;
+            padding: 5px;
+            background-color: #e8e8e8;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+            position: relative;
+        }
+        .station-name:hover {
+            background-color: #dcdcdc;
+        }
+        .station-data {
+            display: none;
+            padding: 10px;
+            background: #fff;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .station-name:hover + .station-data {
+            display: block;
+        }
+        .last-updated {
+            font-style: italic;
+            color: #888;
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            font-size: 12px;
+        }
+        .updated-recent { background-color: green; color: white; }
+        .updated-soon { background-color: yellow; color: black; }
+        .updated-late { background-color: red; color: white; }
+        .error {
+            background-color: rgb(255, 0, 0);
+            color: white;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Live Train Tracker / Transperth</h1>
+    <div id="station-grid">Loading data...</div>
+    <script>
+        function fetchData() {
+            fetch('/data')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch data');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    let formattedData = Object.keys(data).map(line => {
+                        const stationsHtml = Object.keys(data[line]).map(url => {
+                            try {
+                                const parser = new DOMParser();
+                                const doc = parser.parseFromString(data[line][url], 'text/html');
+                                let lastUpdatedText = doc.querySelector('.footable-last-column em') ? doc.querySelector('.footable-last-column em').innerText : 'No update information';
+                                if (lastUpdatedText !== 'No update information') {
+                                    lastUpdatedText = lastUpdatedText.replace('Last Updated: ', '').split(' at ')[1]; // extracting only the time
+                                }
+    
+                                const lastUpdated = new Date();
+                                lastUpdated.setHours(parseInt(lastUpdatedText.split(':')[0]));
+                                lastUpdated.setMinutes(parseInt(lastUpdatedText.split(':')[1]));
+                                lastUpdated.setSeconds(parseInt(lastUpdatedText.split(':')[2]));
+    
+                                const now = new Date();
+                                const diff = (now - lastUpdated) / 1000;
+    
+                                let colorClass = 'updated-late';
+                                if (diff <= 30) colorClass = 'updated-recent';
+                                else if (diff <= 60) colorClass = 'updated-soon';
+    
+                                let zeroCarsIcon = '';
+                                Array.from(doc.querySelectorAll('tr')).forEach(tr => {
+                                    if (tr.textContent.includes('(0 cars)')) {
+                                        const isToMandurah = tr.textContent.includes('To Mandurah');
+                                        const isToPerth = tr.textContent.includes('To Perth');
+                                        const iconColor = isToMandurah ? 'orange' : (isToPerth ? 'black' : 'blue');
+                                        zeroCarsIcon += `<i class="fa-solid fa-square-c" style="color: ${iconColor};"></i> `;
+                                    }
+                                });
+    
+                                return `<div class="station-name">${zeroCarsIcon}${url.split('=')[2].replace('%20Stn', '').replace('%20', ' ')}<span class="last-updated ${colorClass}">${lastUpdatedText}</span></div>
+                                        <div class="station-data">${data[line][url]}</div>`;
+                            } catch (error) {
+                                // If parsing fails, display raw data.
+                                return `<div class="station-name"><span class="error"><i class="fa-solid fa-calendar-xmark"></i></span>${url.split('=')[2].replace('%20Stn', '').replace('%20', ' ')}</div>
+                                        <div class="station-data"><pre>${JSON.stringify(data[line][url], null, 2)}</pre></div>`;
+                            }
+                        }).join('');
+                        return `<div class="station-line"><h2>${line}</h2>${stationsHtml}</div>`;
+                    }).join('');
+                    document.getElementById('station-grid').innerHTML = formattedData;
+                })
+                .catch(error => document.getElementById('station-grid').innerHTML = `<pre>${error.toString()}</pre>`);
+        }
+    
+        fetchData();
+        setInterval(fetchData, 2000);
+    </script>    
+</body>
+</html>
