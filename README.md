@@ -8,9 +8,9 @@ A very simple self-hostable site that slowly tracks trains currently scheduled o
    - Terminal for MacOS
 2. ENSURE you have a version of [Node](https://nodejs.org/en/download) installed on your computer. (I have tested with v18 and Higher)
 3. Open the new folder you made in your terminal of choice and initiate the files:
-   `npm init -y` (This creates your package.json instantly)
-   `npm i express node-cron puppeteer` (This will install the dependencies required to run the server)
-   `node .` (This runs the server)
+   - [x] `npm init -y` (This creates your package.json instantly)
+   - [x]`npm i express node-cron puppeteer` (This will install the dependencies required to run the server)
+   - [x]`node .` (This runs the server)
 
 The reason I get you to init and install yourself is because each version of Node uses different versions of dependencies, which can cause some errors in the short-term and kills me long-term. This just eliminates that issue.
 
