@@ -50,7 +50,7 @@ const stations = {
 
 let scrapeData = {};
 
-for (let l in s) {
+for (let l in stations) {
     scrapeData[l] = {};
 }
 
@@ -78,8 +78,8 @@ async function doScrape(u) {
 
 async function scrape() {
     console.log(`[${getNowTime()}] Started a full scrape.`);
-    for (let l in s) {
-        for (let u of s[l]) {
+    for (let l in stations) {
+        for (let u of stations[l]) {
             scrapeData[l][u] = await doScrape(u);
         }
     }
@@ -90,7 +90,7 @@ cron.schedule(commonOccurence, async () => {
     await scrape();
 }); // Starts a scrape every so often depending on the specified value at the top of file.
 
-app.use('/', express.static('index.html')); // Endpoint used to open the file in your browser via http://localhost:3000/
+app.use('/home', express.static('index.html')); // Endpoint used to open the file in your browser via http://localhost:3000/
 
 app.get('/data', (req, res) => {
   if (Object.keys(scrapeData).length === 0) {
