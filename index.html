@@ -7,72 +7,170 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        .timeline {
-            position: relative;
-            width: 200px;
-            margin: 40px auto;
-            background: #f4f4f4;
-            padding: 20px;
-            border-radius: 10px;
-        }
-        .timeline::after {
-            content: '';
-            position: absolute;
-            width: 6px;
-            background-color: #ddd;
-            top: 0;
-            bottom: 0;
-            left: 100%;
-            margin-left: -3px;
-        }
-        .station {
+        .map {
             position: relative;
             width: 100%;
-            padding: 10px;
-            text-align: center;
-            font-size: 16px;
-            border-bottom: 1px solid #ddd;
+            height: 100%;
         }
-        .station:last-child {
-            border-bottom: none;
-        }
-        .departures {
+        .line {
             position: absolute;
-            width: 500px;
-            top: 50%;
-            transform: translateY(-50%);
+            height: 2px;
+            background: #FF4500;
         }
-        .north {
-            left: 110%;
-        }
-        .south {
-            right: 110%;
-            text-align: right;
-        }
-        .station-dot {
+        .station {
             position: absolute;
-            top: 50%;
-            left: 100%;
-            height: 12px;
-            width: 12px;
-            background-color: #555;
-            border: 2px solid #fff;
-            transform: translate(-50%, -50%);
+            width: 6px;
+            height: 6px;
+            background: none;
+            border: black 2px solid;
             border-radius: 50%;
+        }
+        .station-label {
+            position: absolute;
+            white-space: nowrap;
+            font-size: 10px;
+            text-align: center;
+        }
+        .dot {
+            position: absolute;
+            width: 50px;
+            height: 30px;
+            background-color: rgb(0, 255, 0);
+            border-radius: 5px;
+        }
+        .dot > span {
+            position: relative;
+            height: 10px;
+            width: 10px;
+        }
+        .dot > span > p {
+            font-size: 10px;
+            transform: translateY(-10px);
+            text-align: center;
+        }
+        .dot.red {
+            background-color: red;
+        }
+        .dot.red > span > p {
+            color: white;
+        }
+        .dot.approaching {
+            background-color: rgb(255, 170, 0);
         }
     </style>
 </head>
 <body>
-    <h1>Train Line Timeline</h1>
-    <div id="timeline" class="timeline">
-        
+    <div class="map" id="map">
+        <!-- Stations will be added dynamically -->
     </div>
-
     <script>
+        const stationPositions = {
+            'MAN1': { x: 50, y: 650 },
+            'LAL1': { x: 50, y: 600 },
+            'WAR1': { x: 50, y: 550 },
+            'RCK1': { x: 50, y: 500 },
+            'WRD1': { x: 50, y: 450 },
+            'KWI1': { x: 50, y: 400 },
+            'AUB1': { x: 50, y: 350 },
+            'COC1': { x: 50, y: 300 },
+            'MUR1': { x: 50, y: 250 },
+            'BUL1': { x: 50, y: 200 },
+            'CBR1': { x: 50, y: 150 },
+            'ESP1': { x: 50, y: 100 },
+            'PER1': { x: 50, y: 50 },
+            'PER2': { x: 150, y: 50 },
+            'ESP2': { x: 150, y: 100 },
+            'CBR2': { x: 150, y: 150 },
+            'BUL2': { x: 150, y: 200 },
+            'MUR2': { x: 150, y: 250 },
+            'COC2': { x: 150, y: 300 },
+            'AUB2': { x: 150, y: 350 },
+            'KWI2': { x: 150, y: 400 },
+            'WRD2': { x: 150, y: 450 },
+            'RCK2': { x: 150, y: 500 },
+            'WAR2': { x: 150, y: 550 },
+            'LAL2': { x: 150, y: 600 },
+            'MAN2': { x: 150, y: 650 },
+        };
+
+        const stations = [
+            { name: 'Mandurah', code: 'MAN1' },
+            { name: 'Lakelands', code: 'LAL1' },
+            { name: 'Warnbro', code: 'WAR1' },
+            { name: 'Rockingham', code: 'RCK1' },
+            { name: 'Wellard', code: 'WRD1' },
+            { name: 'Kwinana', code: 'KWI1' },
+            { name: 'Aubin Grove', code: 'AUB1' },
+            { name: 'Cockburn Central', code: 'COC1' },
+            { name: 'Murdoch', code: 'MUR1' },
+            { name: 'Bull Creek', code: 'BUL1' },
+            { name: 'Canning Bridge', code: 'CBR1' },
+            { name: 'Elizabeth Quay', code: 'ESP1' },
+            { name: 'Perth Underground', code: 'PER1' },
+            { name: 'Perth Underground', code: 'PER2' },
+            { name: 'Elizabeth Quay', code: 'ESP2' },
+            { name: 'Canning Bridge', code: 'CBR2' },
+            { name: 'Bull Creek', code: 'BUL2' },
+            { name: 'Murdoch', code: 'MUR2' },
+            { name: 'Cockburn Central', code: 'COC2' },
+            { name: 'Aubin Grove', code: 'AUB2' },
+            { name: 'Kwinana', code: 'KWI2' },
+            { name: 'Wellard', code: 'WRD2' },
+            { name: 'Rockingham', code: 'RCK2' },
+            { name: 'Warnbro', code: 'WAR2' },
+            { name: 'Lakelands', code: 'LAL2' },
+            { name: 'Mandurah', code: 'MAN2' },
+        ];
+
         document.addEventListener('DOMContentLoaded', function() {
+            drawMap();
             fetchData();
         });
+
+        function drawMap() {
+            const map = document.getElementById('map');
+
+            // Draw lines between stations
+            for (let i = 0; i < stations.length - 1; i++) {
+                const start = stationPositions[stations[i].code];
+                const end = stationPositions[stations[i + 1].code];
+
+                if (start && end) {
+                    const line = document.createElement('div');
+                    line.className = 'line';
+                    line.style.width = `${Math.abs(end.x - start.x)}px`;
+                    line.style.height = `${Math.abs(end.y - start.y)}px`;
+                    line.style.left = `${Math.min(start.x, end.x)}px`;
+                    line.style.top = `${Math.min(start.y, end.y)}px`;
+
+                    map.appendChild(line);
+                }
+            }
+
+            // Draw stations
+            stations.forEach(station => {
+                const pos = stationPositions[station.code];
+                if (pos) {
+                    const stationDiv = document.createElement('div');
+                    stationDiv.className = 'station';
+                    stationDiv.style.left = `${pos.x}px`;
+                    stationDiv.style.top = `${pos.y}px`;
+
+                    const labelDiv = document.createElement('div');
+                    labelDiv.className = 'station-label';
+                    labelDiv.style.left = `${pos.x}px`;
+                    labelDiv.style.top = `${pos.y + 10}px`;
+                    labelDiv.textContent = station.name;
+
+                    map.appendChild(stationDiv);
+                    map.appendChild(labelDiv);
+                }
+            });
+        }
 
         function fetchData() {
             fetch('/data')
@@ -82,62 +180,93 @@
                     const xmlDoc = parser.parseFromString(data, "text/xml");
                     console.log(xmlDoc);
                     const stationsInfo = {};
-    
+
                     const lineStationTrips = xmlDoc.getElementsByTagName('LineStationTrip');
+
                     Array.from(lineStationTrips).forEach(lineStationTrip => {
                         const stationTrips = lineStationTrip.getElementsByTagName('StationTrip');
-    
+
                         Array.from(stationTrips).forEach(station => {
                             const stationName = station.getElementsByTagName('StationName')[0].textContent;
                             if (!stationsInfo[stationName]) {
-                                stationsInfo[stationName] = { north: '', south: '' };
+                                stationsInfo[stationName] = [];
                             }
-    
+
                             const trips = station.getElementsByTagName('Trip');
                             Array.from(trips).forEach(trip => {
+                                const TripId = trip.getElementsByTagName('TripId')[0]?.textContent;
+                                const Run = trip.getElementsByTagName('Run')[0]?.textContent;
+                                const Uid = trip.getElementsByTagName('Uid')[0]?.textContent;
+                                const Cancelled = trip.getElementsByTagName('Cancelled')[0]?.textContent;
                                 const Ncar = trip.getElementsByTagName('Ncar')[0]?.textContent;
-                                var State = trip.getElementsByTagName('State')[0]?.textContent;
-                                const Destination = trip.getElementsByTagName('Destination')[0]?.textContent;
+                                const State = trip.getElementsByTagName('State')[0]?.textContent;
                                 const RunPlatform = trip.getElementsByTagName('RunPlatform')[0]?.textContent;
-    
-                                if (State === 'Appr') {
-                                    State = 'approaching';
-                                } else if (State === 'Pred') {
-                                    State = 'on other line. Currently at';
-                                } else {
-                                    State = 'standing at';
-                                }
-    
-                                const tripInfo = `<p>${Ncar} car ${State} ${RunPlatform}. For ${Destination}</p>`;
-                                
-                                if (Destination === 'Mandurah' && lineStationTrip.getElementsByTagName('Outbound')[0].textContent === 'true') {
-                                    stationsInfo[stationName].south += tripInfo;
-                                } else if (Destination !== 'Mandurah' && lineStationTrip.getElementsByTagName('Outbound')[0].textContent === 'false') {
-                                    stationsInfo[stationName].north += tripInfo;
-                                }
+                                const Patterncode = trip.getElementsByTagName('Patterncode')[0]?.textContent;
+                                const Schedule = trip.getElementsByTagName('Schedule')[0]?.textContent;
+                                const Actual = trip.getElementsByTagName('Actual')[0]?.textContent;
+                                const Delay = trip.getElementsByTagName('Delay')[0]?.textContent;
+                                const Destination = trip.getElementsByTagName('Destination')[0]?.textContent;
+
+                                stationsInfo[stationName].push({
+                                    TripId,
+                                    Run,
+                                    Uid,
+                                    Cancelled,
+                                    Ncar,
+                                    State,
+                                    RunPlatform,
+                                    Patterncode,
+                                    Schedule,
+                                    Actual,
+                                    Delay,
+                                    Destination
+                                });
                             });
                         });
                     });
-    
-                    const timeline = document.getElementById('timeline');
-                    timeline.innerHTML = '';
-                    Object.keys(stationsInfo).forEach(stationName => {
-                        const stationDiv = document.createElement('div');
-                        stationDiv.className = 'station';
-                        stationDiv.innerHTML = `<div class="station-dot"></div><h3>${stationName}</h3>`;
-    
-                        const southDiv = document.createElement('div');
-                        southDiv.className = 'departures south';
-                        southDiv.innerHTML = stationsInfo[stationName].south;
-                        stationDiv.appendChild(southDiv);
-    
-                        const northDiv = document.createElement('div');
-                        northDiv.className = 'departures north';
-                        northDiv.innerHTML = stationsInfo[stationName].north;
-                        stationDiv.appendChild(northDiv);
-    
-                        timeline.appendChild(stationDiv);
-                    });
+
+                    document.querySelectorAll('.dot').forEach(dot => dot.remove());
+
+                    for (const stationName in stationsInfo) {
+                        const trips = stationsInfo[stationName];
+                        trips.forEach(trip => {
+                            const dotDiv = document.createElement('div');
+                            dotDiv.className = 'dot';
+                            
+                            const ncarSpan = document.createElement('span');
+                            const ncarP = document.createElement('p');
+                            const dateToTime = trip.Actual.split(' ')[1];
+                            ncarP.textContent = `${trip.Ncar} - ${trip.Run} ${dateToTime} ${trip.Schedule}`;
+                            ncarSpan.appendChild(ncarP);
+                            dotDiv.appendChild(ncarSpan);
+
+                            if (trip.State === 'Plat' && stationPositions[trip.RunPlatform]) {
+                                dotDiv.style.left = `${stationPositions[trip.RunPlatform].x}px`;
+                                dotDiv.style.top = `${stationPositions[trip.RunPlatform].y}px`;
+                                document.getElementById('map').appendChild(dotDiv);
+                            } else if (trip.State === 'Pred' && stationPositions[trip.RunPlatform]) {
+                                dotDiv.className += ' red';
+                                dotDiv.style.left = `${stationPositions[trip.RunPlatform].x + 50}px`;
+                                dotDiv.style.top = `${stationPositions[trip.RunPlatform].y}px`;
+                                document.getElementById('map').appendChild(dotDiv);
+                            } else if (trip.State === 'Appr' && (trip.RunPlatform === 'MAN1' || trip.RunPlatform === 'MAN2')) {
+                                dotDiv.className += ' approaching';
+                                dotDiv.style.left = `${stationPositions['MAN2'].x - 10}px`;
+                                dotDiv.style.top = `${stationPositions['MAN2'].y - 25}px`;
+                                document.getElementById('map').appendChild(dotDiv);
+                            } else if (trip.State === 'Appr' && stationPositions[trip.RunPlatform]) {
+                                dotDiv.className += ' approaching';
+                                dotDiv.style.left = `${stationPositions[trip.RunPlatform].x}px`;
+                                // Check if the platform is on the northbound or southbound track
+                                if (trip.RunPlatform.endsWith('1')) {  // Northbound
+                                    dotDiv.style.top = `${stationPositions[trip.RunPlatform].y + 25}px`;
+                                } else if (trip.RunPlatform.endsWith('2')) {  // Southbound
+                                    dotDiv.style.top = `${stationPositions[trip.RunPlatform].y - 25}px`;
+                                }
+                                document.getElementById('map').appendChild(dotDiv);
+                            }
+                        });
+                    }
                 })
                 .catch(error => console.error('Error fetching data:', error));
         }
@@ -145,6 +274,6 @@
         setInterval(() => {
             fetchData();
         }, 2000);
-    </script>       
+    </script>
 </body>
 </html>
